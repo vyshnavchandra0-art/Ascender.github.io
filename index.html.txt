@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Vyshnav’s JEE Habit & Progress Tracker</title>
+	<style>
+		/* ==== GLOBAL DARK THEME ==== */
+		:root {
+			--bg-main: #020617;
+			--bg-elevated: #020617;
+			--bg-card: #020617;
+			--bg-header: #020617;
+			--border-subtle: #1f2937;
+			--text-main: #e5e7eb;
+			--text-muted: #9ca3af;
+			--accent-1: #22c55e;
+			--accent-2: #38bdf8;
+			--accent-3: #a855f7;
+			--danger: #ef4444;
+		}
+		* {
+			box-sizing: border-box;
+		}
+		body {
+			font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+			margin: 0;
+			padding: 0;
+			background: radial-gradient(circle at top, #0b1120 0, #020617 45%, #020617 100%);
+			color: var(--text-main);
+		}
+		header {
+			background: linear-gradient(90deg, #020617, #020617 40%, #111827 100%);
+			padding: 16px 24px;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			position: sticky;
+			top: 0;
+			z-index: 10;
+			border-bottom: 1px solid var(--border-subtle);
+			backdrop-filter: blur(12px);
+		}
+		h1 {
+			margin: 0;
+			font-size: 20px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		h1::before {
+			content: "⚡";
+			font-size: 20px;
+		}
+		nav a {
+			color: var(--text-muted);
+			margin-left: 16px;
+			text-decoration: none;
+			font-size: 14px;
+			padding: 4px 8px;
+			border-radius: 999px;
+			transition: background 0.15s, color 0.15s, transform 0.1s;
+		}
+		nav a:hover {
+			color: #f9fafb;
+			background: rgba(148, 163, 184, 0.14);
+			transform: translateY(-1px);
+		}
+		.container {
+			max-width: 1000px;
+			margin: 24px auto 40px;
+			padding: 0 16px;
+		}
+		.section {
+			background: rgba(15, 23, 42, 0.9);
+			border-radius: 14px;
+			padding: 16px 20px 20px;
+			margin-bottom: 18px;
+			border: 1px solid var(--border-subtle);
+			box-shadow: 0 18px 40px rgba(15, 23, 42, 0.9);
+		}
+		.section h2 {
+			margin: 0 0 6px;
+			font-size: 18px;
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.section h2::before {
+			content: "●";
+			font-size: 10px;
+			color: var(--accent-2);
+		}
+		.section small {
+			color: var(--text-muted);
+		}
+		.progress-bar {
+			background: #020617;
+			border-radius: 999px;
+			overflow: hidden;
+			height: 16px;
+			margin-top: 6px;
+			margin-bottom: 8px;
+			border: 1px solid #111827;
+		}
+		.progress-fill {
+			height: 100%;
+			background: linear-gradient(90deg, var(--accent-1), var(--accent-2));
+			width: 40%; /* JS updates this */
+			transition: width 0.2s ease-out;
+		}
+		.chip {
+			display: inline-block;
+			background: rgba(15, 23, 42, 0.9);
+			border-radius: 999px;
+			padding: 4px 10px;
+			font-size: 11px;
+			color: var(--text-muted);
+			border: 1px solid var(--border-subtle);
+			margin-right: 6px;
+			margin-top: 4px;
+		}
+		table {
+			width: 100%;
+			border-collapse: collapse;
+			margin-top: 8px;
+			font-size: 14px;
+		}
+		th, td {
+			padding: 6px 8px;
+			border-bottom: 1px solid #020617;
+		}
+		th {
+			text-align: left;
+			color: var(--text-muted);
+			font-weight: 500;
+			background: #020617;
+		}
+		tr:nth-child(even) td {
+			background: rgba(15, 23, 42, 0.7);
+		}
+		tr:hover td {
+			background: rgba(30, 64, 175, 0.22);
+		}
+		.badge {
+			font-size: 11px;
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: #1d4ed8;
+			color: #e5e7eb;
+		}
+		.badge-green {
+			background: #15803d;
+		}
+		.badge-yellow {
+			background: #a16207;
+		}
+		.badge-red {
+			background: var(--danger);
+		}
+		input[type="checkbox"] {
+			transform: scale(1.1);
+			accent-color: var(--accent-1);
+			cursor: pointer;
+		}
+		.subtext {
+			font-size: 12px;
+			color: var(--text-muted);
+		}
+		.xp {
+			font-weight: 600;
+			color: #facc15;
+		}
+		.tag {
+			font-size: 11px;
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: rgba(15, 23, 42, 0.9);
+			color: var(--text-muted);
+			margin-left: 4px;
+			border: 1px solid #1e293b;
+		}
+		.section-title-row {
+			display: flex;
+			justify-content: space-between;
+			align-items: baseline;
+			gap: 8px;
+			flex-wrap: wrap;
+		}
+		.pill-row {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 6px;
+			margin-top: 4px;
+		}
+		.level-pill {
+			font-size: 11px;
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: rgba(63, 81, 181, 0.18);
+			border: 1px solid #1d4ed8;
+			color: #c7d2fe;
+		}
+		.streak-pill {
+			font-size: 11px;
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: rgba(22, 163, 74, 0.15);
+			border: 1px solid #16a34a;
+			color: #bbf7d0;
+		}
+		.warning-pill {
+			font-size: 11px;
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: rgba(239, 68, 68, 0.1);
+			border: 1px solid var(--danger);
+			color: #fecaca;
+		}
+		@media (max-width: 640px) {
+			header {
+				flex-direction: column;
+				align-items: flex-start;
+				gap: 8px;
+			}
+			nav {
+				display: flex;
+				flex-wrap: wrap;
+				gap: 4px;
+				padding-bottom: 4px;
+			}
+		}
+	</style>
+</head>
+<body>
+
+<header>
+	<h1>JEE Tracker – Vyshnav</h1>
+	<nav>
+		<a href="#dashboard">Dashboard</a>
+		<a href="#habits">Habits</a>
+		<a href="#jee">JEE Progress</a>
+		<a href="#tasks">Personal Tasks</a>
+	</nav>
+</header>
+
+<div class="container">
+
+	<!-- DASHBOARD -->
+	<section id="dashboard" class="section">
+		<div class="section-title-row">
+			<h2>Dashboard</h2>
+			<small id="today"></small>
+		</div>
+		<empty-block/>
+		<div class="pill-row">
+			<div class="level-pill" id="xp-level-pill">Level 1 – Beginner</div>
+			<div class="streak-pill" id="streak-pill">Streak: 0 days</div>
+			<div class="warning-pill">Rule: No zero days</div>
+		</div>
+		<empty-block/>
+
+		<p class="subtext">Overall Habits Completion</p>
+		<div class="progress-bar">
+			<div class="progress-fill" id="habit-progress"></div>
+		</div>
+
+		<p class="subtext">JEE Syllabus Completion</p>
+		<div class="progress-bar">
+			<div class="progress-fill" id="jee-progress"></div>
+		</div>
+
+		<p class="subtext">Experience Points (XP)</p>
+		<div class="progress-bar">
+			<div class="progress-fill" id="xp-progress"></div>
+		</div>
+		<p class="subtext">
+			Total XP: <span class="xp" id="total-xp">0</span>
+		</p>
+	</section>
+
+	<!-- HABITS TRACKER -->
+	<section id="habits" class="section">
+		<h2>Daily Habits</h2>
+		<small>Tick as you complete. XP + progress update instantly (for today only).</small>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Done</th>
+					<th>Habit</th>
+					<th>Details</th>
+					<th>XP</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="15"></td>
+					<td>Physics practice</td>
+					<td class="subtext">At least 1.5 hr focused + notes</td>
+					<td><span class="xp">+15</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="15"></td>
+					<td>Maths questions</td>
+					<td class="subtext">Solve 40–50 good questions</td>
+					<td><span class="xp">+15</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="10"></td>
+					<td>Chemistry revision</td>
+					<td class="subtext">NCERT + formulas</td>
+					<td><span class="xp">+10</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="8"></td>
+					<td>Mock / PYQ</td>
+					<td class="subtext">At least 1 timed section</td>
+					<td><span class="xp">+8</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="6"></td>
+					<td>Health</td>
+					<td class="subtext">Walk / workout 20–30 min</td>
+					<td><span class="xp">+6</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="6"></td>
+					<td>Mindset</td>
+					<td class="subtext">5–10 min journaling / meditation</td>
+					<td><span class="xp">+6</span></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<!-- JEE PROGRESS + XP -->
+	<section id="jee" class="section">
+		<h2>JEE Progress &amp; XP</h2>
+		<small>Update this table weekly to see bigger progress.</small>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Subject</th>
+					<th>Chapter / Topic</th>
+					<th>Status</th>
+					<th>Questions</th>
+					<th>Accuracy</th>
+					<th>XP Reward</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td>Physics</td>
+					<td>Kinematics</td>
+					<td><span class="badge-green badge">Completed</span></td>
+					<td>200</td>
+					<td>75%</td>
+					<td><span class="xp">+40</span></td>
+				</tr>
+				<tr>
+					<td>Physics</td>
+					<td>Laws of Motion</td>
+					<td><span class="badge-yellow badge">In Progress</span></td>
+					<td>80</td>
+					<td>68%</td>
+					<td><span class="xp">+20</span></td>
+				</tr>
+				<tr>
+					<td>Chemistry</td>
+					<td>Atomic Structure</td>
+					<td><span class="badge-green badge">Completed</span></td>
+					<td>150</td>
+					<td>80%</td>
+					<td><span class="xp">+35</span></td>
+				</tr>
+				<tr>
+					<td>Maths</td>
+					<td>Quadratic Equations</td>
+					<td><span class="badge-yellow badge">In Progress</span></td>
+					<td>120</td>
+					<td>70%</td>
+					<td><span class="xp">+25</span></td>
+				</tr>
+				<tr>
+					<td>Maths</td>
+					<td>Sequences &amp; Series</td>
+					<td><span class="badge badge-red">Not started</span></td>
+					<td>0</td>
+					<td>-</td>
+					<td><span class="xp">+30 when completed</span></td>
+				</tr>
+			</tbody>
+		</table>
+	</section>
+
+	<!-- PERSONAL TASKS -->
+	<section id="tasks" class="section">
+		<h2>Personal Tasks (To Become Better)</h2>
+		<small>Things that improve you beyond marks.</small>
+
+		<table>
+			<thead>
+				<tr>
+					<th>Done</th>
+					<th>Task</th>
+					<th>Category</th>
+					<th>XP</th>
+				</tr>
+			</thead>
+			<tbody>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="5"></td>
+					<td>Read 10 pages of a good non-fiction book</td>
+					<td><span class="tag">mindset</span></td>
+					<td><span class="xp">+5</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="5"></td>
+					<td>Practice English speaking for 15 minutes</td>
+					<td><span class="tag">communication</span></td>
+					<td><span class="xp">+5</span></td>
+				</tr>
+				<tr>
+					<td><input type="checkbox" class="habit-check" data-xp="5"></td>
+					<td>Maintain sleep schedule (no phone after 11 pm)</td>
+					<td><span class="tag">health</span></td>
+					<td><span class="xp">+5</span></td>
+				</tr>
+			</tbody>
+		</table>
+		<p class="subtext">
+			Replace these with your own tasks that make you more focused, disciplined, and confident.
+		</p>
+	</section>
+
+</div>
+
+<script>
+	// === BASIC DATE ===
+	const todayEl = document.getElementById('today');
+	const today = new Date();
+	todayEl.textContent = today.toLocaleDateString('en-IN', {
+		weekday: 'short',
+		year: 'numeric',
+		month: 'short',
+		day: 'numeric'
+	});
+
+	// === SIMPLE LOCAL STREAK (resets if browser storage cleared) ===
+	const STREAK_KEY = 'vyshnav_jee_streak';
+	const LAST_DAY_KEY = 'vyshnav_jee_last_day';
+
+	function updateStreak() {
+		const streakEl = document.getElementById('streak-pill');
+		const todayDay = Math.floor(Date.now() / (1000 * 60 * 60 * 24));
+		const lastDay = Number(localStorage.getItem(LAST_DAY_KEY) || 0);
+		let streak = Number(localStorage.getItem(STREAK_KEY) || 0);
+
+		if (!lastDay) {
+			streak = 0;
+		} else if (todayDay === lastDay) {
+			// same day, streak unchanged
+		} else if (todayDay === lastDay + 1) {
+			streak += 1;
+		} else if (todayDay > lastDay + 1) {
+			streak = 0; // missed a day
+		}
+
+		localStorage.setItem(STREAK_KEY, String(streak));
+		localStorage.setItem(LAST_DAY_KEY, String(todayDay));
+
+		streakEl.textContent = 'Streak: ' + streak + ' day' + (streak === 1 ? '' : 's');
+	}
+	updateStreak();
+
+	// === XP + PROGRESS (for current page session) ===
+	const checks = document.querySelectorAll('.habit-check');
+	const totalXpEl = document.getElementById('total-xp');
+	const habitProgressEl = document.getElementById('habit-progress');
+	const jeeProgressEl = document.getElementById('jee-progress');
+	const xpProgressEl = document.getElementById('xp-progress');
+	const xpLevelPillEl = document.getElementById('xp-level-pill');
+
+	function updateStats() {
+		let totalHabits = checks.length;
+		let doneHabits = 0;
+		let totalXp = 0;
+
+		checks.forEach(ch => {
+			if (ch.checked) {
+				doneHabits++;
+				totalXp += Number(ch.dataset.xp || 0);
+			}
+		});
+
+		const habitPercent = totalHabits === 0 ? 0 : Math.round((doneHabits / totalHabits) * 100);
+		habitProgressEl.style.width = habitPercent + '%';
+
+		const jeePercent = Math.min(100, Math.round(habitPercent * 0.8));
+		jeeProgressEl.style.width = jeePercent + '%';
+
+		// XP bar: assume 0–300 XP for full bar
+		totalXpEl.textContent = totalXp;
+		const xpPercent = Math.min(100, Math.round((totalXp / 300) * 100));
+		xpProgressEl.style.width = xpPercent + '%';
+
+		// Level calculation
+		let level = 1;
+		if (totalXp >= 300) level = 4;
+		else if (totalXp >= 150) level = 3;
+		else if (totalXp >= 60) level = 2;
+
+		let label = 'Level ' + level + ' – ';
+		if (level === 1) label += 'Beginner';
+		if (level === 2) label += 'Consistent';
+		if (level === 3) label += 'Serious Contender';
+		if (level === 4) label += 'JEE Warrior';
+
+		xpLevelPillEl.textContent = label;
+	}
+
+	checks.forEach(ch => {
+		ch.addEventListener('change', updateStats);
+	});
+	updateStats();
+</script>
+
+</body>
+</html>
